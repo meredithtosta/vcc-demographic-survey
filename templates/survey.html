@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venture Capital Demographic Data Survey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+        
+        .company-name {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .notice {
+            background: #f0f8ff;
+            border-left: 4px solid #0066cc;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .notice h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #0066cc;
+        }
+        
+        .notice p {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .question-group {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .question-group:last-of-type {
+            border-bottom: none;
+        }
+        
+        .question-label {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: block;
+            color: #1a1a1a;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .checkbox-item input[type="checkbox"],
+        .checkbox-item input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .checkbox-item label {
+            cursor: pointer;
+            font-size: 15px;
+        }
+        
+        .decline-all {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 4px;
+        }
+        
+        .decline-all label {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .submit-btn {
+            background: #0066cc;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        
+        .submit-btn:hover {
+            background: #0052a3;
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Venture Capital Demographic Data Survey</h1>
+        <div class="company-name">Company: {{ company_name }}</div>
+        
+        <div class="notice">
+            <h3>Participation is Voluntary</h3>
+            <p><strong>Your decision to disclose demographic information is voluntary.</strong> No adverse action will be taken against you if you decline to participate in the survey.</p>
+            <p>Only aggregated and anonymized data collected for each demographic category will be reported to the California Department of Financial Protection and Innovation (DFPI).</p>
+            <p>In California, the Fair Investment Practices by Venture Capital Companies Law requires covered venture capital companies to gather demographic data from founding team members and report aggregated data to the DFPI.</p>
+        </div>
+        
+        <form id="surveyForm">
+            <div class="question-group">
+                <label class="question-label">Gender: I identify as (select all that apply):</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="gender_woman" name="gender" value="woman">
+                        <label for="gender_woman">Woman</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="gender_man" name="gender" value="man">
+                        <label for="gender_man">Man</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="gender_nonbinary" name="gender" value="nonbinary">
+                        <label for="gender_nonbinary">Nonbinary</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="gender_transgender" name="gender" value="transgender">
+                        <label for="gender_transgender">Transgender</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="gender_none" name="gender" value="none">
+                        <label for="gender_none">None of the above</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="gender_decline" name="gender" value="decline">
+                        <label for="gender_decline">Decline to state</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-group">
+                <label class="question-label">Race/Ethnicity: I identify as (select all that apply):</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="race_black" name="race" value="black">
+                        <label for="race_black">Black or African American</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="race_asian" name="race" value="asian">
+                        <label for="race_asian">Asian</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="race_hispanic" name="race" value="hispanic">
+                        <label for="race_hispanic">Hispanic or Latino/Latina</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="race_native_american" name="race" value="native_american">
+                        <label for="race_native_american">Native American or Alaskan Native</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="race_pacific_islander" name="race" value="pacific_islander">
+                        <label for="race_pacific_islander">Native Hawaiian or Other Pacific Islander</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="race_white" name="race" value="white">
+                        <label for="race_white">White</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="race_none" name="race" value="none">
+                        <label for="race_none">None of the above</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="race_decline" name="race" value="decline">
+                        <label for="race_decline">Decline to state</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-group">
+                <label class="question-label">LGBTQ+: I identify as:</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="radio" id="lgbtq_yes" name="lgbtq" value="yes">
+                        <label for="lgbtq_yes">LGBTQ+</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="lgbtq_no" name="lgbtq" value="no">
+                        <label for="lgbtq_no">Not LGBTQ+</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="lgbtq_decline" name="lgbtq" value="decline">
+                        <label for="lgbtq_decline">Decline to state</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-group">
+                <label class="question-label">Disability Status: I identify as:</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="radio" id="disability_yes" name="disability" value="yes">
+                        <label for="disability_yes">A person with a disability</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="disability_no" name="disability" value="no">
+                        <label for="disability_no">Not a person with a disability</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="disability_decline" name="disability" value="decline">
+                        <label for="disability_decline">Decline to state</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-group">
+                <label class="question-label">Veteran Status: I identify as:</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="radio" id="veteran_yes" name="veteran" value="veteran">
+                        <label for="veteran_yes">A Veteran</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="veteran_disabled" name="veteran" value="disabled_veteran">
+                        <label for="veteran_disabled">A Disabled Veteran</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="veteran_no" name="veteran" value="no">
+                        <label for="veteran_no">Not a Veteran</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="veteran_decline" name="veteran" value="decline">
+                        <label for="veteran_decline">Decline to state</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-group">
+                <label class="question-label">California Residency: I am:</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="radio" id="ca_resident_yes" name="ca_resident" value="yes">
+                        <label for="ca_resident_yes">A Resident of California</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="ca_resident_no" name="ca_resident" value="no">
+                        <label for="ca_resident_no">Not a Resident of California</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="ca_resident_decline" name="ca_resident" value="decline">
+                        <label for="ca_resident_decline">Decline to state</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="decline-all">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="decline_all" name="decline_all">
+                    <label for="decline_all">Decline to state for all responses</label>
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-btn">Submit Survey</button>
+            
+            <div id="message"></div>
+        </form>
+    </div>
+    
+    <script>
+        const form = document.getElementById('surveyForm');
+        const declineAll = document.getElementById('decline_all');
+        const messageDiv = document.getElementById('message');
+        const allInputs = form.querySelectorAll('input:not(#decline_all)');
+        
+        // Handle "decline all" checkbox
+        declineAll.addEventListener('change', function() {
+            allInputs.forEach(input => {
+                input.disabled = this.checked;
+                if (this.checked) {
+                    input.checked = false;
+                }
+            });
+        });
+        
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = form.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            // Collect form data
+            const formData = {
+                token: '{{ token }}',
+                decline_all: declineAll.checked,
+                gender: [],
+                race: [],
+                lgbtq: null,
+                disability: null,
+                veteran: null,
+                ca_resident: null
+            };
+            
+            if (!declineAll.checked) {
+                // Gender (multi-select)
+                document.querySelectorAll('input[name="gender"]:checked').forEach(input => {
+                    formData.gender.push(input.value);
+                });
+                
+                // Race (multi-select)
+                document.querySelectorAll('input[name="race"]:checked').forEach(input => {
+                    formData.race.push(input.value);
+                });
+                
+                // Single selections
+                const lgbtq = document.querySelector('input[name="lgbtq"]:checked');
+                if (lgbtq) formData.lgbtq = lgbtq.value;
+                
+                const disability = document.querySelector('input[name="disability"]:checked');
+                if (disability) formData.disability = disability.value;
+                
+                const veteran = document.querySelector('input[name="veteran"]:checked');
+                if (veteran) formData.veteran = veteran.value;
+                
+                const ca_resident = document.querySelector('input[name="ca_resident"]:checked');
+                if (ca_resident) formData.ca_resident = ca_resident.value;
+            }
+            
+            try {
+                const response = await fetch('/api/submit_survey', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    messageDiv.innerHTML = `
+                        <div class="success-message">
+                            <strong>Thank you!</strong><br>
+                            Your response has been recorded anonymously.
+                        </div>
+                    `;
+                    form.style.display = 'none';
+                } else {
+                    throw new Error(result.error || 'Submission failed');
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `
+                    <div class="error-message">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Survey';
+            }
+        });
+    </script>
+</body>
+</html>

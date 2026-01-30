@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Companies</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #1a1a1a;
+        }
+        
+        .btn {
+            background: #0066cc;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .btn:hover {
+            background: #0052a3;
+        }
+        
+        .back-link {
+            color: #0066cc;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .response-rate {
+            font-weight: 600;
+        }
+        
+        .response-rate.good {
+            color: #28a745;
+        }
+        
+        .response-rate.medium {
+            color: #ffc107;
+        }
+        
+        .response-rate.low {
+            color: #dc3545;
+        }
+        
+        .survey-link {
+            font-size: 12px;
+            color: #6c757d;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .copy-btn {
+            background: #e9ecef;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        
+        .copy-btn:hover {
+            background: #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Dashboard</a>
+        
+        <div class="header">
+            <h1>Portfolio Companies</h1>
+            <a href="/admin/add_company" class="btn">+ Add Company</a>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Company Name</th>
+                    <th>Year</th>
+                    <th>Founders</th>
+                    <th>Responses</th>
+                    <th>Response Rate</th>
+                    <th>Primarily Diverse</th>
+                    <th>Survey Link</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                <tr>
+                    <td><strong>{{ company.company_name }}</strong></td>
+                    <td>{{ company.investment_year }}</td>
+                    <td>{{ company.total_founders or 0 }}</td>
+                    <td>{{ company.total_responses or 0 }}</td>
+                    <td>
+                        {% if company.total_founders and company.total_founders > 0 %}
+                            {% set rate = (company.total_responses or 0) / company.total_founders * 100 %}
+                            <span class="response-rate {% if rate >= 75 %}good{% elif rate >= 50 %}medium{% else %}low{% endif %}">
+                                {{ "%.0f"|format(rate) }}%
+                            </span>
+                        {% else %}
+                            <span class="response-rate low">0%</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if company.is_primarily_diverse == 1 %}
+                            <span class="badge badge-success">Yes</span>
+                        {% elif company.is_primarily_diverse == 0 %}
+                            <span class="badge badge-warning">No</span>
+                        {% else %}
+                            <span class="badge badge-info">Insufficient Data</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="survey-link">
+                            <code id="link-{{ company.id }}">{{ request.host_url }}survey/{{ company.survey_link_token }}</code>
+                            <button class="copy-btn" onclick="copyLink('{{ request.host_url }}survey/{{ company.survey_link_token }}')">Copy</button>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="/admin/company/{{ company.id }}">View Details</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <script>
+        function copyLink(link) {
+            navigator.clipboard.writeText(link).then(() => {
+                alert('Survey link copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>
