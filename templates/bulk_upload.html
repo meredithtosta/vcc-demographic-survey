@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Portfolio Company</title>
+    <title>Bulk Upload Companies</title>
     <style>
         * {
             margin: 0;
@@ -52,24 +52,17 @@
             color: #1a1a1a;
         }
 
-        input[type="text"],
-        input[type="number"] {
+        input[type="file"] {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 2px dashed #ddd;
             border-radius: 4px;
             font-size: 15px;
+            cursor: pointer;
         }
 
-        input:focus {
-            outline: none;
+        input[type="file"]:hover {
             border-color: #0066cc;
-        }
-
-        .help-text {
-            font-size: 13px;
-            color: #666;
-            margin-top: 5px;
         }
 
         .btn {
@@ -105,13 +98,51 @@
             border: 1px solid #f5c6cb;
             color: #721c24;
         }
+
+        .info-box {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e7f3ff;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            margin-bottom: 10px;
+            color: #004085;
+        }
+
+        .info-box p {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .csv-example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .download-template {
+            display: inline-block;
+            margin-top: 10px;
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        .download-template:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <a href="/admin/companies" class="back-link">← Back to Companies</a>
 
-        <h1>Add Portfolio Company</h1>
+        <h1>Bulk Upload Companies</h1>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -124,38 +155,28 @@
         {% endwith %}
 
         <div class="card">
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <div class="form-group">
-                    <label for="company_name">Company Name *</label>
-                    <input type="text" id="company_name" name="company_name" required>
+                    <label for="file">Upload CSV File</label>
+                    <input type="file" id="file" name="file" accept=".csv" required>
                 </div>
 
-                <div class="form-group">
-                    <label for="investment_year">Investment Year *</label>
-                    <input type="number" id="investment_year" name="investment_year"
-                           min="2024" max="2030" value="2025" required>
-                    <div class="help-text">The calendar year when you made the investment</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="total_founders">Number of Founders *</label>
-                    <input type="number" id="total_founders" name="total_founders"
-                           min="1" max="20" value="2" required>
-                    <div class="help-text">Total number of founding team members</div>
-                </div>
-
-                <button type="submit" class="btn">Create Company & Generate Survey Link</button>
+                <button type="submit" class="btn">Upload & Create Companies</button>
             </form>
         </div>
 
-        <div style="margin-top: 30px; padding: 20px; background: #e7f3ff; border-radius: 4px;">
-            <h3 style="margin-bottom: 10px;">What happens next?</h3>
-            <ol style="margin-left: 20px; line-height: 1.8;">
-                <li>A unique survey link will be generated for this company</li>
-                <li>Share the link with all founding team members</li>
-                <li>Responses are automatically anonymized and aggregated</li>
-                <li>View the aggregated data on the company detail page</li>
-            </ol>
+        <div class="info-box">
+            <h3>CSV Format</h3>
+            <p>Your CSV file should have the following columns:</p>
+            <div class="csv-example">
+company_name,investment_year,total_founders<br>
+Acme Corp,2025,3<br>
+Beta Inc,2025,2<br>
+Gamma LLC,2024,4
+            </div>
+            <p><strong>Required columns:</strong> company_name, investment_year</p>
+            <p><strong>Optional columns:</strong> total_founders (defaults to 1)</p>
+            <a href="/admin/bulk_template" class="download-template">↓ Download CSV Template</a>
         </div>
     </div>
 </body>

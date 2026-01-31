@@ -6,7 +6,7 @@ from datetime import datetime
 from flask import Flask, request, render_template, jsonify, send_file, flash, redirect, url_for
 from cryptography.fernet import Fernet
 import sqlite3
-from io import StringIO
+from io import StringIO, BytesIO
 import csv
 
 app = Flask(__name__)
@@ -98,16 +98,35 @@ def calculate_diverse_status(aggregated_data):
     # This is a simplified calculation - in reality, need to track per-response
     # For now, if total diverse identifications >= responses, likely primarily diverse
     total_diverse_indicators = (
-        diverse_count + race_diverse + lgbtq_diverse + 
+        diverse_count + race_diverse + lgbtq_diverse +
         disability_diverse + veteran_diverse
     )
-    
-    return total_diverse_indicators >= total_responses
+
+    # Return 1 or 0 for SQLite compatibility (not True/False)
+    return 1 if total_diverse_indicators >= total_responses else 0
 
 @app.route('/')
 def index():
     """Admin dashboard"""
     return render_template('dashboard.html')
+
+@app.route('/admin/recalculate')
+def recalculate_diverse():
+    """Recalculate diverse status for all companies"""
+    conn = get_db()
+    aggregated_rows = conn.execute('SELECT * FROM aggregated_responses').fetchall()
+
+    for row in aggregated_rows:
+        agg_dict = dict(row)
+        diverse_status = calculate_diverse_status(agg_dict)
+        conn.execute(
+            'UPDATE aggregated_responses SET is_primarily_diverse = ? WHERE company_id = ?',
+            (diverse_status, agg_dict['company_id'])
+        )
+
+    conn.commit()
+    conn.close()
+    return redirect(url_for('list_companies'))
 
 @app.route('/survey/<token>')
 def survey_form(token):
@@ -187,36 +206,38 @@ def submit_survey():
         if data.get('decline_all'):
             agg_dict['total_declined_all'] += 1
         else:
-            # Gender
-            if 'woman' in data.get('gender', []):
+            # Gender (single selection)
+            gender = data.get('gender')
+            if gender == 'woman':
                 agg_dict['gender_woman'] += 1
-            if 'man' in data.get('gender', []):
+            elif gender == 'man':
                 agg_dict['gender_man'] += 1
-            if 'nonbinary' in data.get('gender', []):
+            elif gender == 'nonbinary':
                 agg_dict['gender_nonbinary'] += 1
-            if 'transgender' in data.get('gender', []):
+            elif gender == 'transgender':
                 agg_dict['gender_transgender'] += 1
-            if 'none' in data.get('gender', []):
+            elif gender == 'none':
                 agg_dict['gender_other'] += 1
-            if 'decline' in data.get('gender', []):
+            elif gender == 'decline':
                 agg_dict['gender_declined'] += 1
-            
-            # Race
-            if 'black' in data.get('race', []):
+
+            # Race (single selection)
+            race = data.get('race')
+            if race == 'black':
                 agg_dict['race_black'] += 1
-            if 'asian' in data.get('race', []):
+            elif race == 'asian':
                 agg_dict['race_asian'] += 1
-            if 'hispanic' in data.get('race', []):
+            elif race == 'hispanic':
                 agg_dict['race_hispanic'] += 1
-            if 'native_american' in data.get('race', []):
+            elif race == 'native_american':
                 agg_dict['race_native_american'] += 1
-            if 'pacific_islander' in data.get('race', []):
+            elif race == 'pacific_islander':
                 agg_dict['race_pacific_islander'] += 1
-            if 'white' in data.get('race', []):
+            elif race == 'white':
                 agg_dict['race_white'] += 1
-            if 'none' in data.get('race', []):
+            elif race == 'none':
                 agg_dict['race_other'] += 1
-            if 'decline' in data.get('race', []):
+            elif race == 'decline':
                 agg_dict['race_declined'] += 1
             
             # LGBTQ+
@@ -328,6 +349,69 @@ def company_detail(company_id):
                          aggregated=dict(aggregated) if aggregated else None,
                          response_count=response_count)
 
+@app.route('/admin/company/<int:company_id>/delete', methods=['POST'])
+def delete_company(company_id):
+    """Delete a company and all its data"""
+    conn = get_db()
+    conn.execute('DELETE FROM individual_responses WHERE company_id = ?', (company_id,))
+    conn.execute('DELETE FROM aggregated_responses WHERE company_id = ?', (company_id,))
+    conn.execute('DELETE FROM portfolio_companies WHERE id = ?', (company_id,))
+    conn.commit()
+    conn.close()
+    flash('Company deleted successfully', 'success')
+    return redirect(url_for('list_companies'))
+
+@app.route('/admin/company/<int:company_id>/update_founders', methods=['POST'])
+def update_founders(company_id):
+    """Update the number of founders for a company"""
+    total_founders = int(request.form.get('total_founders', 1))
+    if total_founders < 1:
+        total_founders = 1
+
+    conn = get_db()
+    conn.execute(
+        'UPDATE aggregated_responses SET total_founders = ? WHERE company_id = ?',
+        (total_founders, company_id)
+    )
+
+    # Recalculate diverse status
+    aggregated = conn.execute(
+        'SELECT * FROM aggregated_responses WHERE company_id = ?',
+        (company_id,)
+    ).fetchone()
+
+    if aggregated:
+        agg_dict = dict(aggregated)
+        agg_dict['total_founders'] = total_founders
+        diverse_status = calculate_diverse_status(agg_dict)
+        conn.execute(
+            'UPDATE aggregated_responses SET is_primarily_diverse = ? WHERE company_id = ?',
+            (diverse_status, company_id)
+        )
+
+    conn.commit()
+    conn.close()
+    flash(f'Founder count updated to {total_founders}', 'success')
+    return redirect(url_for('company_detail', company_id=company_id))
+
+@app.route('/admin/company/<int:company_id>/update_name', methods=['POST'])
+def update_company_name(company_id):
+    """Update the company name"""
+    company_name = request.form.get('company_name', '').strip()
+    if not company_name:
+        flash('Company name cannot be empty', 'error')
+        return redirect(url_for('company_detail', company_id=company_id))
+
+    conn = get_db()
+    conn.execute(
+        'UPDATE portfolio_companies SET company_name = ? WHERE id = ?',
+        (company_name, company_id)
+    )
+    conn.commit()
+    conn.close()
+    flash(f'Company name updated to "{company_name}"', 'success')
+    return redirect(url_for('company_detail', company_id=company_id))
+
 @app.route('/admin/add_company', methods=['GET', 'POST'])
 def add_company():
     """Add a new portfolio company"""
@@ -360,8 +444,78 @@ def add_company():
         
         flash(f'Company added successfully. Survey link: {request.host_url}survey/{token}', 'success')
         return redirect(url_for('list_companies'))
-    
+
     return render_template('add_company.html')
+
+@app.route('/admin/bulk_upload', methods=['GET', 'POST'])
+def bulk_upload():
+    """Bulk upload companies from CSV"""
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file uploaded', 'error')
+            return redirect(url_for('bulk_upload'))
+
+        file = request.files['file']
+        if file.filename == '':
+            flash('No file selected', 'error')
+            return redirect(url_for('bulk_upload'))
+
+        if not file.filename.endswith('.csv'):
+            flash('Please upload a CSV file', 'error')
+            return redirect(url_for('bulk_upload'))
+
+        try:
+            # Read CSV content
+            content = file.read().decode('utf-8')
+            reader = csv.DictReader(StringIO(content))
+
+            conn = get_db()
+            created_count = 0
+
+            for row in reader:
+                company_name = row.get('company_name', '').strip()
+                investment_year = row.get('investment_year', '').strip()
+                total_founders = row.get('total_founders', '1').strip()
+
+                if not company_name or not investment_year:
+                    continue
+
+                token = generate_survey_token()
+
+                cursor = conn.execute(
+                    'INSERT INTO portfolio_companies (company_name, investment_year, survey_link_token) VALUES (?, ?, ?)',
+                    (company_name, int(investment_year), token)
+                )
+                company_id = cursor.lastrowid
+
+                conn.execute(
+                    'INSERT INTO aggregated_responses (company_id, total_founders) VALUES (?, ?)',
+                    (company_id, int(total_founders))
+                )
+                created_count += 1
+
+            conn.commit()
+            conn.close()
+
+            flash(f'Successfully created {created_count} companies', 'success')
+            return redirect(url_for('list_companies'))
+
+        except Exception as e:
+            flash(f'Error processing file: {str(e)}', 'error')
+            return redirect(url_for('bulk_upload'))
+
+    return render_template('bulk_upload.html')
+
+@app.route('/admin/bulk_template')
+def bulk_template():
+    """Download CSV template for bulk upload"""
+    template = "company_name,investment_year,total_founders\nExample Company,2025,2\n"
+    return send_file(
+        BytesIO(template.encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='company_upload_template.csv'
+    )
 
 @app.route('/admin/export_dfpi/<int:year>')
 def export_dfpi_report(year):

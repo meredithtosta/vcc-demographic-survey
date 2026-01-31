@@ -10,29 +10,29 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: #f5f5f5;
             padding: 20px;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
         }
-        
+
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
         }
-        
+
         h1 {
             color: #1a1a1a;
         }
-        
+
         .btn {
             background: #0066cc;
             color: white;
@@ -41,18 +41,18 @@
             text-decoration: none;
             font-weight: 600;
         }
-        
+
         .btn:hover {
             background: #0052a3;
         }
-        
+
         .back-link {
             color: #0066cc;
             text-decoration: none;
             margin-bottom: 20px;
             display: inline-block;
         }
-        
+
         table {
             width: 100%;
             background: white;
@@ -61,7 +61,7 @@
             overflow: hidden;
             border-collapse: collapse;
         }
-        
+
         th {
             background: #f8f9fa;
             padding: 15px;
@@ -69,16 +69,16 @@
             font-weight: 600;
             border-bottom: 2px solid #dee2e6;
         }
-        
+
         td {
             padding: 15px;
             border-bottom: 1px solid #eee;
         }
-        
+
         tr:hover {
             background: #f8f9fa;
         }
-        
+
         .badge {
             display: inline-block;
             padding: 4px 12px;
@@ -86,38 +86,38 @@
             font-size: 12px;
             font-weight: 600;
         }
-        
+
         .badge-success {
             background: #d4edda;
             color: #155724;
         }
-        
+
         .badge-warning {
             background: #fff3cd;
             color: #856404;
         }
-        
+
         .badge-info {
             background: #d1ecf1;
             color: #0c5460;
         }
-        
+
         .response-rate {
             font-weight: 600;
         }
-        
+
         .response-rate.good {
             color: #28a745;
         }
-        
+
         .response-rate.medium {
             color: #ffc107;
         }
-        
+
         .response-rate.low {
             color: #dc3545;
         }
-        
+
         .survey-link {
             font-size: 12px;
             color: #6c757d;
@@ -126,7 +126,7 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        
+
         .copy-btn {
             background: #e9ecef;
             border: none;
@@ -135,7 +135,7 @@
             cursor: pointer;
             font-size: 11px;
         }
-        
+
         .copy-btn:hover {
             background: #dee2e6;
         }
@@ -144,12 +144,15 @@
 <body>
     <div class="container">
         <a href="/" class="back-link">← Back to Dashboard</a>
-        
+
         <div class="header">
             <h1>Portfolio Companies</h1>
-            <a href="/admin/add_company" class="btn">+ Add Company</a>
+            <div>
+                <a href="/admin/bulk_upload" class="btn" style="background: #6c757d; margin-right: 10px;">↑ Bulk Upload</a>
+                <a href="/admin/add_company" class="btn">+ Add Company</a>
+            </div>
         </div>
-        
+
         <table>
             <thead>
                 <tr>
@@ -203,7 +206,7 @@
             </tbody>
         </table>
     </div>
-    
+
     <script>
         function copyLink(link) {
             navigator.clipboard.writeText(link).then(() => {
