@@ -603,6 +603,8 @@ def export_dfpi_report(year):
         headers={'Content-Disposition': f'attachment;filename=dfpi_report_{year}.csv'}
     )
 
+# Initialize database on startup (works with gunicorn too)
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True, port=5000)
